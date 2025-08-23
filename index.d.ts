@@ -53,7 +53,7 @@ declare class ChainlinkDataStreamsConsumer extends EventEmitter {
     Promise<void>;
   disconnect():
     void;
-  get feeds:
+  get feeds():
     Set<string> & { add: never, delete: never, clear: never };
   generateHeaders(
     method: string,
@@ -100,6 +100,16 @@ declare type Report = {
       linkFee: bigint;
       expiresAt: number;
       price: bigint;
+      marketStatus: number;
+    }
+  | {
+      version: 'v8';
+      validFromTimestamp: bigint;
+      nativeFee: bigint;
+      linkFee: bigint;
+      expiresAt: number;
+      lastUpdateTimestamp: bigint;
+      midPrice: bigint;
       marketStatus: number;
     }
 );

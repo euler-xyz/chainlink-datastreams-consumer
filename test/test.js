@@ -252,3 +252,109 @@ describe('decoding', function () {
     });
   });
 });
+
+describe('V8 schema', function () {
+
+  it('should identify V8 feed ID correctly', function () {
+    const v8FeedId = '0x0008000000000000000000000000000000000000000000000000000000000000';
+    const version = Report.feedIdToVersion(v8FeedId);
+    assert.strictEqual(version, 'v8');
+  });
+
+  it('should create V8 Report instance with correct properties', function () {
+    const mockFullReport = {
+      reportContext: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+      reportBlob: {
+        version: 'v8',
+        decoded: {
+          feedId: '0x0008000000000000000000000000000000000000000000000000000000000000',
+          validFromTimestamp: 1000n,
+          observationsTimestamp: 2000n,
+          nativeFee: 100n,
+          linkFee: 200n,
+          expiresAt: 3000n,
+          lastUpdateTimestamp: 2500n,
+          midPrice: 50000n,
+          marketStatus: 2n,
+        }
+      },
+      rawRs: [],
+      rawSs: [],
+      rawVs: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      rawReport: '0x0000000000000000000000000000000000000000000000000000000000000000'
+    };
+
+    const report = new Report({
+      feedID: '0x0008000000000000000000000000000000000000000000000000000000000000',
+      validFromTimestamp: 1000,
+      observationsTimestamp: 2000,
+      fullReport: mockFullReport
+    });
+
+    assert.strictEqual(report.version, 'v8');
+    assert.strictEqual(report.feedId, '0x0008000000000000000000000000000000000000000000000000000000000000');
+    assert.strictEqual(report.validFromTimestamp, 1000n);
+    assert.strictEqual(report.observationsTimestamp, 2000n);
+    assert.strictEqual(report.nativeFee, 100n);
+    assert.strictEqual(report.linkFee, 200n);
+    assert.strictEqual(report.expiresAt, 3000n);
+    assert.strictEqual(report.lastUpdateTimestamp, 2500n);
+    assert.strictEqual(report.midPrice, 50000n);
+    assert.strictEqual(report.marketStatus, 2n);
+  });
+
+  it('should handle V8 market status values correctly', function () {
+    const marketStatuses = [0, 1, 2]; // Unknown, Closed, Open
+    
+    marketStatuses.forEach(status => {
+      const mockFullReport = {
+        reportContext: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+        reportBlob: {
+          version: 'v8',
+          decoded: {
+            feedId: '0x0008000000000000000000000000000000000000000000000000000000000000',
+            validFromTimestamp: 1000n,
+            observationsTimestamp: 2000n,
+            nativeFee: 100n,
+            linkFee: 200n,
+            expiresAt: 3000n,
+            lastUpdateTimestamp: 2500n,
+            midPrice: 50000n,
+            marketStatus: BigInt(status),
+          }
+        },
+        rawRs: [],
+        rawSs: [],
+        rawVs: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        rawReport: '0x0000000000000000000000000000000000000000000000000000000000000000'
+      };
+
+      const report = new Report({
+        feedID: '0x0008000000000000000000000000000000000000000000000000000000000000',
+        validFromTimestamp: 1000,
+        observationsTimestamp: 2000,
+        fullReport: mockFullReport
+      });
+
+      assert.strictEqual(report.marketStatus, BigInt(status));
+    });
+  });
+
+  it('should maintain backward compatibility with existing schemas', function () {
+    const existingVersions = ['v1', 'v2', 'v3', 'v4'];
+    
+    existingVersions.forEach(version => {
+      assert.ok(Report.reportBlobAbiSchema[version], 
+        `Schema for ${version} should still be accessible`);
+      assert.ok(Array.isArray(Report.reportBlobAbiSchema[version]), 
+        `Schema for ${version} should be an array`);
+    });
+
+    assert.ok(Report.reportBlobAbiSchema.v8, 'V8 schema should be accessible');
+    assert.ok(Array.isArray(Report.reportBlobAbiSchema.v8), 'V8 schema should be an array');
+    
+    const expectedV8Fields = 9;
+    assert.strictEqual(Report.reportBlobAbiSchema.v8.length, expectedV8Fields,
+      `V8 schema should have ${expectedV8Fields} fields`);
+  });
+});

@@ -1,3 +1,7 @@
+# 2.2.0
+
+* **NEW:** Added support for Chainlink Data Streams V8 report schema
+
 # 2.0.0
 
 * **NEW:** Unencrypted `http://` and `ws://` are now supported (use for testing only!)
